@@ -1,0 +1,18 @@
+{
+    "compilerOptions": {
+      "target": "ES2017",
+      "module": "CommonJS",
+      "strict": true,
+      "baseUrl": "./",
+      "outDir": "./dist",
+      "paths": {
+        "*": ["node_modules/*"]
+      },
+      "esModuleInterop": true,
+      "experimentalDecorators": true, 
+      "emitDecoratorMetadata": true,
+      "skipLibCheck": true
+    },
+    "exclude": ["node_modules", "dist"]
+  }
+  
