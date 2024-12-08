@@ -15,9 +15,10 @@ model Player {
   gold        Int      @default(0)                  
   strength    Int      @default(10)                 
   resistance  Int      @default(10)                 
-  vitality    Int      @default(100)                
+  vitality    Int      @default(100) 
   createdAt   DateTime @default(now()) 
   games       Game[]
+  inventory   PlayerItems[]
 }
 
 model Game {
@@ -31,4 +32,36 @@ model Game {
   // archived    Boolean  @default(false)       
   createdAt   DateTime @default(now())                 
   player      Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+}
+
+model Shop {
+  id          Int      @id @default(autoincrement()) 
+  items       Items[] 
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now())
+}
+
+model Items {
+  id          Int      @id @default(autoincrement()) 
+  shopId      Int? 
+  name        String   @unique
+  type        String
+  price       Int
+  strength    Int      
+  resistance  Int      
+  vitality    Int     
+  shop        Shop?     @relation(fields: [shopId], references: [id])
+  players     PlayerItems[]
+}
+
+model PlayerItems {
+  playerId    Int
+  itemId      Int
+  Equipped    Boolean  @default(false)
+  assignedAt  DateTime @default(now())
+
+  player      Player   @relation(fields: [playerId], references: [id], onDelete: Cascade) // Relation avec Player
+  item        Items    @relation(fields: [itemId], references: [id], onDelete: Cascade)   // Relation avec Items
+  
+  @@id([playerId, itemId]) // Clé composite pour éviter les doublons
 }

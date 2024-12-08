@@ -1,25 +1,26 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PlayerService } from '../player/player.service';
+import { LoginDto } from './dto/login.dto';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
   constructor(private playerService: PlayerService, private jwtService: JwtService,) {}
 
-  async validatePlayer(name: string, password: string) {
-    const player = await this.playerService.findByName(name);
+  async validatePlayer(LoginDto: LoginDto) {
+    const player = await this.playerService.findByName(LoginDto.name);
 
     if (!player) throw new UnauthorizedException('Invalid credentials');
 
-    const isPasswordValid = await bcrypt.compare(password, player.password);
+    const isPasswordValid = await bcrypt.compare(LoginDto.password, player.password);
     if (!isPasswordValid) throw new UnauthorizedException('Invalid credentials');
 
     return player;
   }
 
-  async login(name: string, password: string) {
-    const player = await this.validatePlayer(name, password);
+  async login(LoginDto: LoginDto) {
+    const player = await this.validatePlayer(LoginDto);
 
     // Générer le token JWT
     const payload = { sub: player.id, name: player.name };
@@ -36,8 +37,9 @@ export class AuthService {
         strength: player.strength,
         resistance: player.resistance,
         vitality: player.vitality,
-        createdAt: player.createdAt,
       },
     };
   }
+
+  
 }

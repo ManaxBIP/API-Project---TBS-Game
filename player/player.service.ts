@@ -29,12 +29,11 @@ export class PlayerService {
     });
   }
 
-  async GetPlayerInfos(name: string) {
+  async GetPlayerStats(playerId: string) {
     const player = await this.prisma.player.findUnique({
-      where: { name },
+      where: { id: Number(playerId) },
     });
     return {
-      id: player?.id,
       name: player?.name,
       race: player?.race,
       gold: player?.gold, 
@@ -42,5 +41,120 @@ export class PlayerService {
       resistance: player?.resistance,
       vitality: player?.vitality
     }
+  }
+
+  async equipItem(playerId: number, itemId: number) {
+    let playerItem = await this.prisma.playerItems.findFirst({
+      where: {
+        playerId: playerId,
+        itemId: itemId,
+      },
+    });
+
+    if (!playerItem) return { message: 'Item not found' };
+
+    if (playerItem.Equipped) return { message: 'Item already equipped' };
+
+    playerItem = await this.prisma.playerItems.update({
+      where: { 
+        playerId_itemId: {
+          playerId: playerId,
+          itemId: itemId,
+        }
+      },
+      data: { Equipped: true },
+    });
+
+    const item = await this.prisma.items.findUnique({
+      where: { id: itemId },
+    });
+    
+    if (!item) return { message: 'Item not found' };
+
+    await this.prisma.player.update({
+      where: { id: playerId },
+      data: {
+        strength: { increment: item.strength },
+        resistance: { increment: item.resistance },
+        vitality: { increment: item.vitality },
+      },
+    });
+
+    const player = await this.prisma.player.findUnique({
+      where: { id: playerId },
+    });
+
+    return { message: 'Item equipped', 'new strength': player?.strength, 'new resistance': player?.resistance, 'new vitality': player?.vitality };
+  }
+
+  async unequipItem(playerId: number, itemId: number) {
+    let playerItem = await this.prisma.playerItems.findFirst({
+      where: {
+        playerId: playerId,
+        itemId: itemId,
+      },
+    });
+
+    if (!playerItem) return { message: 'Item not found' };
+
+    if (!playerItem.Equipped) return { message: 'Item not equipped' };
+
+    playerItem = await this.prisma.playerItems.update({
+      where: { 
+        playerId_itemId: {
+          playerId: playerId,
+          itemId: itemId,
+        }
+      },
+      data: { Equipped: false },
+    });
+
+    const item = await this.prisma.items.findUnique({
+      where: { id: itemId },
+    });
+    
+    if (!item) return { message: 'Item not found' };
+
+    await this.prisma.player.update({
+      where: { id: playerId },
+      data: {
+        strength: { decrement: item.strength },
+        resistance: { decrement: item.resistance },
+        vitality: { decrement: item.vitality },
+      },
+    });
+
+    const player = await this.prisma.player.findUnique({
+      where: { id: playerId },
+    });
+
+    return { message: 'Item unequipped', 'new strength': player?.strength, 'new resistance': player?.resistance, 'new vitality': player?.vitality };
+  }
+
+  async getInventory(playerId: number) {
+    return this.prisma.playerItems.findMany({
+      where: { playerId },
+      select: {
+      Equipped: true,
+      item: {
+        select: {
+          id: true,
+          name: true,
+          type: true,
+          price: true,
+          strength: true,
+          resistance: true,
+          vitality: true,
+        },
+      },
+      },
+    });
+  }
+
+  async delete(playerId: number) {
+    await this.prisma.player.delete({
+      where: { id: playerId },
+    });
+    return { message: 'This player has been deleted' };
   }
 }
