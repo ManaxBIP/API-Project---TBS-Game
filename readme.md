@@ -1,7 +1,7 @@
 # TBS Game API
 
 ## Description
-Une API de jeu de stratégie au tour par tour (Turn-Based Strategy - TBS) permettant aux joueurs de créer des personnages, combattre des adversaires (IA), acheter des items dans une boutique, et gérer leurs inventaires.
+Une API de jeu de stratégie au tour par tour (Turn-Based Strategy - TBS) permettant aux joueurs de créer des personnages, combattre un adversaire (IA), acheter des items dans une boutique, et gérer leurs inventaires.
 
 ## Fonctionnalités
 
